@@ -1,11 +1,11 @@
 import { useContext, useState } from 'react'
-import { Button, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Button, Text, TextInput, View } from 'react-native'
 import { AuthContext } from '../context/AuthProvider'
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('m@r.ek')
   const [password, setPassword] = useState('password')
-  const { login } = useContext(AuthContext)
+  const { login, error, isLoading } = useContext(AuthContext)
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <Text>Login Screen</Text>
@@ -27,6 +27,8 @@ export default function LoginScreen() {
         // secureTextEntry={true}
       />
       <Button onPress={() => login(email, password)} title='Login' />
+      {error && <Text style={{ color: 'red' }}>{error}</Text>}
+      {isLoading && <ActivityIndicator />}
     </View>
   )
 }

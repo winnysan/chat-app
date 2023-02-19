@@ -1,10 +1,11 @@
-import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, View } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { AuthContext } from './context/AuthProvider'
 import { useContext, useEffect, useState } from 'react'
 import HomeScreen from './screens/HomeScreen'
 import LoginScreen from './screens/LoginScreen'
+import * as SecureStore from 'expo-secure-store'
 
 const Stack = createNativeStackNavigator()
 
@@ -13,13 +14,18 @@ export default function App() {
   const { user, setUser } = useContext(AuthContext)
 
   useEffect(() => {
-    console.log('[Root.jsx | useEffect] user: ', user)
-    // check if user is logged in or not
-    // check SecureStore for the user object/token
-
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 1000)
+    SecureStore.getItemAsync('user')
+      .then(userString => {
+        if (userString) {
+          setUser(JSON.parse(userString))
+        }
+        // console.log('SecureStore user: ', userString)
+        setIsLoading(false)
+      })
+      .catch(error => {
+        console.error('SecureStore error: ', error)
+        setIsLoading(false)
+      })
   }, [])
 
   if (isLoading) {
@@ -48,12 +54,3 @@ export default function App() {
     </>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-})
