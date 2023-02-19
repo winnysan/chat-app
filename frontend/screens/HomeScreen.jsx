@@ -3,7 +3,7 @@ import { ActivityIndicator, Button, FlatList, Text, View } from 'react-native'
 import { AuthContext } from '../context/AuthProvider'
 import axiosConfig from '../helpers/axiosConfig'
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
   const { user, logout } = useContext(AuthContext)
   const [data, setData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
@@ -18,22 +18,26 @@ export default function HomeScreen() {
     axiosConfig
       .get('/conversations')
       .then(response => {
-        console.log('Conversations: ', response.data.conversations)
+        // console.log('Conversations: ', response.data.conversations)
         setData(response.data.conversations)
-        setIsLoading(false)
       })
       .catch(error => {
         console.error('Conversations error: ', error.response)
-        setIsLoading(false)
       })
+      .finally(() => setIsLoading(false))
+  }
+
+  function gotoConversation(uuid) {
+    navigation.navigate('Conversation', { uuid })
   }
 
   const renderConversation = ({ item }) => (
     <View>
       <Text>{item.uuid}</Text>
-      {item.users.map(user => (
-        <View key={user.id}>
-          <Text>{user.name}</Text>
+      <Button title='Go to Conversation' onPress={() => gotoConversation(item.uuid)} />
+      {item.users.map(conversationUser => (
+        <View key={conversationUser.id}>
+          {user.id === conversationUser.id ? <Text>Ja</Text> : <Text>{conversationUser.name}</Text>}
         </View>
       ))}
       <Text>Message body</Text>

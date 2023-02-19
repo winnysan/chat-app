@@ -16,8 +16,16 @@ class ConversationController extends Controller
     public function index(Request $request)
     {
         $conversations = $request->user()->conversations->load('users');
+
         return response()->json([
             'conversations' => $conversations
+        ], 200);
+    }
+
+    public function show(Conversation $conversation, Request $request)
+    {
+        return response()->json([
+            'conversation' => $conversation->load('users', 'messages.user')
         ], 200);
     }
 }

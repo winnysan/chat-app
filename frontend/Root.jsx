@@ -1,3 +1,4 @@
+import * as SecureStore from 'expo-secure-store'
 import { ActivityIndicator, View } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -5,7 +6,7 @@ import { AuthContext } from './context/AuthProvider'
 import { useContext, useEffect, useState } from 'react'
 import HomeScreen from './screens/HomeScreen'
 import LoginScreen from './screens/LoginScreen'
-import * as SecureStore from 'expo-secure-store'
+import ConversationScreen from './screens/ConversationScreen'
 
 const Stack = createNativeStackNavigator()
 
@@ -42,6 +43,7 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Screen name='Home' component={HomeScreen} />
+            <Stack.Screen name='Conversation' component={ConversationScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       ) : (

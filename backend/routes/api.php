@@ -52,3 +52,4 @@ Route::middleware('auth:sanctum')->post('/logout', function (Request $request) {
 });
 
 Route::get('/conversations', [ConversationController::class, 'index']);
+Route::get('/conversations/{conversation:uuid}', [ConversationController::class, 'show']);
