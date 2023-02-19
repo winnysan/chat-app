@@ -31,7 +31,11 @@ export default function HomeScreen() {
   const renderConversation = ({ item }) => (
     <View>
       <Text>{item.uuid}</Text>
-      <Text>Ja, Peter, Stano</Text>
+      {item.users.map(user => (
+        <View key={user.id}>
+          <Text>{user.name}</Text>
+        </View>
+      ))}
       <Text>Message body</Text>
     </View>
   )

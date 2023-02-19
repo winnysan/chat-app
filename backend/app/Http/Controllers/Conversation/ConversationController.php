@@ -13,9 +13,9 @@ class ConversationController extends Controller
         $this->middleware(['auth:sanctum']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $conversations = Conversation::get();
+        $conversations = $request->user()->conversations->load('users');
         return response()->json([
             'conversations' => $conversations
         ], 200);
