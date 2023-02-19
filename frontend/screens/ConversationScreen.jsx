@@ -1,12 +1,22 @@
 import { useContext, useEffect, useState } from 'react'
-import { ActivityIndicator, Button, FlatList, StyleSheet, Text, View } from 'react-native'
+import {
+  ActivityIndicator,
+  Button,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import { AuthContext } from '../context/AuthProvider'
 import axiosConfig from '../helpers/axiosConfig'
 
 export default function ConversationScreen({ route, navigation }) {
   const { user } = useContext(AuthContext)
-  const [data, setData] = useState([])
+  const [data, setData] = useState({})
   const [isLoading, setIsLoading] = useState(false)
+  const [body, setBody] = useState('new message')
 
   useEffect(() => {
     getConversation()
@@ -26,6 +36,23 @@ export default function ConversationScreen({ route, navigation }) {
       })
       .finally(() => {
         setIsLoading(false)
+      })
+  }
+
+  function sendMessage() {
+    axiosConfig.defaults.headers.common['Authorization'] = `Bearer ${user.token}`
+    axiosConfig
+      .post(`/conversations/${route.params.uuid}/message`, {
+        body,
+      })
+      .then(response => {
+        // console.log('sendMessage: ', response.data.message)
+        const messages = [...data.messages, response.data.message]
+        const newData = { ...data, messages }
+        setData(newData)
+      })
+      .catch(error => {
+        console.error('sendMessage error: ', error.response.message)
       })
   }
 
@@ -57,6 +84,22 @@ export default function ConversationScreen({ route, navigation }) {
           keyExtractor={item => item.id}
         />
       )}
+
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', margin: 10 }}>
+        <TextInput
+          onChangeText={setBody}
+          value={body}
+          placeholder='type...'
+          placeholderTextColor='gray'
+          style={{ flexGrow: 1, backgroundColor: '#fff' }}
+        />
+        <TouchableOpacity
+          style={{ backgroundColor: '#0055b3', padding: 5 }}
+          onPress={() => sendMessage()}
+        >
+          <Text style={{ color: '#fff' }}>Send</Text>
+        </TouchableOpacity>
+      </View>
 
       <Button title='Go back' onPress={() => navigation.goBack()} />
     </View>
