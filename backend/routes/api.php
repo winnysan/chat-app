@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Conversation\ConversationController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -49,3 +50,5 @@ Route::middleware('auth:sanctum')->post('/logout', function (Request $request) {
 
     return response()->json('Logged out', 200);
 });
+
+Route::get('/conversations', [ConversationController::class, 'index']);

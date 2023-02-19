@@ -1,27 +1,54 @@
-import { useContext, useEffect } from 'react'
-import { Button, Text, View } from 'react-native'
+import { useContext, useEffect, useState } from 'react'
+import { ActivityIndicator, Button, FlatList, Text, View } from 'react-native'
 import { AuthContext } from '../context/AuthProvider'
 import axiosConfig from '../helpers/axiosConfig'
 
 export default function HomeScreen() {
   const { user, logout } = useContext(AuthContext)
+  const [data, setData] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    // console.log('User from secure store: ', user.name)
-    // axiosConfig.defaults.headers.common['Authorization'] = `Bearer ${user.token}`
-    // axiosConfig
-    //   .get('/user')
-    //   .then(response => {
-    //     console.log('Get user from api: ', response.data)
-    //   })
-    //   .catch(error => {
-    //     console.error('Get user from api error: ', error.response)
-    //   })
+    getConversations()
   }, [])
+
+  function getConversations() {
+    setIsLoading(true)
+    axiosConfig.defaults.headers.common['Authorization'] = `Bearer ${user.token}`
+    axiosConfig
+      .get('/conversations')
+      .then(response => {
+        console.log('Conversations: ', response.data.conversations)
+        setData(response.data.conversations)
+        setIsLoading(false)
+      })
+      .catch(error => {
+        console.error('Conversations error: ', error.response)
+        setIsLoading(false)
+      })
+  }
+
+  const renderConversation = ({ item }) => (
+    <View>
+      <Text>{item.uuid}</Text>
+      <Text>Ja, Peter, Stano</Text>
+      <Text>Message body</Text>
+    </View>
+  )
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Home Screen</Text>
+      <Text>Conversations:</Text>
+      {isLoading ? (
+        <ActivityIndicator />
+      ) : (
+        <FlatList
+          data={data}
+          renderItem={renderConversation}
+          keyExtractor={item => item.id}
+          ItemSeparatorComponent={<Text>---</Text>}
+        />
+      )}
       <Button onPress={() => logout()} title='Logout' />
     </View>
   )
