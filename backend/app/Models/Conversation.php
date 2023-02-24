@@ -11,13 +11,16 @@ class Conversation extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class)
-            ->oldest();
+        return $this->belongsToMany(User::class);
     }
 
     public function messages()
     {
-        return $this->hasMany(Message::class)
-            ->oldest();
+        return $this->hasMany(Message::class);
+    }
+
+    public function lastMessage()
+    {
+        // return $this->messages()->orderByDesc('created_at')->first();
     }
 }

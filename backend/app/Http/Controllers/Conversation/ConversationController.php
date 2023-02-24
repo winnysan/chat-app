@@ -18,6 +18,11 @@ class ConversationController extends Controller
     {
         $conversations = $request->user()->conversations->load('users');
 
+        $conversations = $conversations->map(function ($conversation) {
+            $conversation->lastMessage = $conversation->messages()->orderByDesc('created_at')->first();
+            return $conversation;
+        });
+
         return response()->json([
             'conversations' => $conversations
         ], 200);
