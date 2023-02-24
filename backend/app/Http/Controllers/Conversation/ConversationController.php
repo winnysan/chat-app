@@ -16,7 +16,7 @@ class ConversationController extends Controller
 
     public function index(Request $request)
     {
-        $conversations = $request->user()->conversations->load('users');
+        $conversations = $request->user()->conversations()->with('users')->orderBy('last_message_at', 'desc')->get();
 
         $conversations = $conversations->map(function ($conversation) {
             $conversation->lastMessage = $conversation->messages()->orderByDesc('created_at')->first();
@@ -44,6 +44,10 @@ class ConversationController extends Controller
         $message = $conversation->messages()->create([
             'user_id' => auth()->id(),
             'body' => $request->body
+        ]);
+
+        $conversation->update([
+            'last_message_at' => now()
         ]);
 
         return response()->json([

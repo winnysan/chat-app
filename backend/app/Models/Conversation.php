@@ -9,6 +9,10 @@ class Conversation extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['last_message_at'];
+
+    protected $dates = ['last_message_at'];
+
     public function users()
     {
         return $this->belongsToMany(User::class);
@@ -17,10 +21,5 @@ class Conversation extends Model
     public function messages()
     {
         return $this->hasMany(Message::class);
-    }
-
-    public function lastMessage()
-    {
-        // return $this->messages()->orderByDesc('created_at')->first();
     }
 }
