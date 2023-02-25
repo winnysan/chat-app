@@ -28,10 +28,16 @@ class ConversationController extends Controller
         ], 200);
     }
 
-    public function show(Conversation $conversation)
+    public function show(Conversation $conversation, Request $request)
     {
+        $request->user()->conversations()->updateExistingPivot($conversation, [
+            'read_at' => now()
+        ]);
+
+        $conversation->load('users', 'messages.user');
+
         return response()->json([
-            'conversation' => $conversation->load('users', 'messages.user')
+            'conversation' => $conversation
         ], 200);
     }
 
@@ -49,6 +55,12 @@ class ConversationController extends Controller
         $conversation->update([
             'last_message_at' => now()
         ]);
+
+        foreach ($conversation->others as $user) {
+            $user->conversations()->updateExistingPivot($conversation, [
+                'read_at' => null
+            ]);
+        }
 
         return response()->json([
             'message' => $message->load('user')

@@ -40,7 +40,10 @@ export default function HomeScreen({ navigation }) {
           {user.id === conversationUser.id ? <Text>Ja</Text> : <Text>{conversationUser.name}</Text>}
         </View>
       ))}
-      <Text>last message: {item.lastMessage.body}</Text>
+      <View>
+        {!item.pivot.read_at && <Text>●</Text>}
+        <Text>last message: {item.lastMessage.body}</Text>
+      </View>
     </View>
   )
 
