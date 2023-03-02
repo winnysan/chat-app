@@ -54,3 +54,7 @@ Route::middleware('auth:sanctum')->post('/logout', function (Request $request) {
 Route::get('/conversations', [ConversationController::class, 'index']);
 Route::get('/conversations/{conversation:uuid}', [ConversationController::class, 'show']);
 Route::post('/conversations/{conversation:uuid}/message', [ConversationController::class, 'store']);
+
+Route::get('/test', function () {
+    return '.../api/test';
+});
