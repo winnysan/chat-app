@@ -5,6 +5,7 @@ import Root from './Root'
 import Pusher from 'pusher-js/react-native'
 import Echo from 'laravel-echo'
 import NetInfo from '@react-native-community/netinfo'
+import { Alert } from 'react-native'
 
 export default function App() {
   useEffect(() => {
@@ -26,9 +27,10 @@ export default function App() {
 
     console.log('Echo', echo)
 
-    // echo.channel('home').listen('NewMessage', e => {
-    //   alert()
-    // })
+    echo.channel('things').listen('NewThingAvailable', event => {
+      console.log(event)
+      Alert.alert(event.message)
+    })
   })
 
   return (
