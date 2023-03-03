@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native'
 import { AuthContext } from '../context/AuthProvider'
+import { EchoContext } from '../context/EchoProvider'
 import axiosConfig from '../helpers/axiosConfig'
 
 export default function ConversationScreen({ route, navigation }) {
@@ -17,9 +18,15 @@ export default function ConversationScreen({ route, navigation }) {
   const [data, setData] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [body, setBody] = useState('new message')
+  const echo = useContext(EchoContext)
 
   useEffect(() => {
     getConversation()
+
+    echo.private(`conversations.${route.params.uuid}`).listen('MessageAdded', event => {
+      console.log(event)
+      Alert.alert(event.message)
+    })
   }, [])
 
   function getConversation() {

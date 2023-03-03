@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Conversation;
 
+use App\Events\Conversation\MessageAdded;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
@@ -61,6 +62,8 @@ class ConversationController extends Controller
                 'read_at' => null
             ]);
         }
+
+        broadcast(new MessageAdded($message))->toOthers();
 
         return response()->json([
             'message' => $message->load('user')

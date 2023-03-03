@@ -20,7 +20,7 @@ export default function App() {
         if (userString) {
           setUser(JSON.parse(userString))
         }
-        // console.log('SecureStore user: ', userString)
+        console.log('SecureStore user: ', userString)
         setIsLoading(false)
       })
       .catch(error => {

@@ -1,8 +1,5 @@
+import { API_URL, WS_HOST } from '@env'
 import { createContext } from 'react'
-import { WS_HOST } from '@env'
-
-import { Alert } from 'react-native'
-
 import Pusher from 'pusher-js/react-native'
 import Echo from 'laravel-echo'
 import NetInfo from '@react-native-community/netinfo'
@@ -17,6 +14,13 @@ let PusherClient = new Pusher('local', {
   wsPort: '6001',
   enabledTransports: ['ws'],
   forceTLS: false,
+  encrypted: true,
+  authEndpoint: `${API_URL}/broadcasting/auth`,
+  auth: {
+    headers: {
+      Authorization: 'Bearer 22|weAEtY92wOZnyWLLCxhVdyqu7utxLDbOrKDMz9WW',
+    },
+  },
   NetInfo,
 })
 
@@ -24,13 +28,6 @@ let echo = new Echo({
   broadcaster: 'pusher',
   client: PusherClient,
 })
-
-// console.log('Echo', echo)
-
-// echo.channel('things').listen('NewThingAvailable', event => {
-//   console.log(event)
-//   Alert.alert(event.message)
-// })
 
 export const EchoProvider = ({ children }) => {
   return <EchoContext.Provider value={echo}>{children}</EchoContext.Provider>
