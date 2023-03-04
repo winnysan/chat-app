@@ -10,7 +10,7 @@ export const EchoContext = createContext()
 export const EchoProvider = ({ children }) => {
   const { user } = useContext(AuthContext)
 
-  Pusher.logToConsole = true
+  Pusher.logToConsole = false
 
   let PusherClient = new Pusher('local', {
     cluster: 'mt1',

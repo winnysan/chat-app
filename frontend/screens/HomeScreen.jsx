@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import { ActivityIndicator, Alert, Button, FlatList, Text, View } from 'react-native'
+import { ActivityIndicator, Button, FlatList, Text, View } from 'react-native'
 import { AuthContext } from '../context/AuthProvider'
 import { EchoContext } from '../context/EchoProvider'
 import axiosConfig from '../helpers/axiosConfig'
@@ -15,10 +15,9 @@ export default function HomeScreen({ navigation }) {
     getConversations()
 
     // laravel echo test http://10.168.2.4/public/broadcast
-    echo.channel('things').listen('NewThingAvailable', event => {
-      console.log(event)
-      Alert.alert(event.message)
-    })
+    // echo.channel('things').listen('NewThingAvailable', event => {
+    //   console.info('event', event)
+    // })
   }, [])
 
   function getConversations() {

@@ -28,9 +28,8 @@ class MessageAdded implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'message' => [
-                'id' => $this->message->id
-            ]
+            'message' => $this->message,
+            'user' => $this->message->user
         ];
     }
 
@@ -43,7 +42,6 @@ class MessageAdded implements ShouldBroadcast
     {
         return [
             new PrivateChannel('conversations.' . $this->message->conversation->uuid),
-            // new Channel('conversations.' . $this->message->conversation->uuid),
         ];
     }
 }

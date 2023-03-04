@@ -17,16 +17,24 @@ export default function ConversationScreen({ route, navigation }) {
   const { user } = useContext(AuthContext)
   const [data, setData] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-  const [body, setBody] = useState('new message')
+  const [body, setBody] = useState('test M phone')
   const echo = useContext(EchoContext)
 
   useEffect(() => {
     getConversation()
 
-    echo.private(`conversations.${route.params.uuid}`).listen('MessageAdded', event => {
-      console.log(event)
-      Alert.alert(event.message)
-    })
+    echo
+      .private(`conversations.${route.params.uuid}`)
+      .listen('Conversation\\MessageAdded', event => {
+        console.info('listen channel: ', event.message.body)
+        // appendMessage(event.message)
+      })
+    console.log(`websocket connected | private channel: conversations.${route.params.uuid}`)
+
+    return () => {
+      echo.leave(`conversations.${route.params.uuid}`)
+      console.log(`websocket disconnected | private channel: conversations.${route.params.uuid}`)
+    }
   }, [])
 
   function getConversation() {
@@ -46,17 +54,22 @@ export default function ConversationScreen({ route, navigation }) {
       })
   }
 
+  function appendMessage(message) {
+    const messages = [...data.messages, message]
+    const newData = { ...data, messages }
+    setData(newData)
+  }
+
   function sendMessage() {
     axiosConfig.defaults.headers.common['Authorization'] = `Bearer ${user.token}`
+    axiosConfig.defaults.headers.common['X-Socket-ID'] = echo.socketId() ? echo.socketId() : null
     axiosConfig
       .post(`/conversations/${route.params.uuid}/message`, {
         body,
       })
       .then(response => {
-        // console.log('sendMessage: ', response.data.message)
-        const messages = [...data.messages, response.data.message]
-        const newData = { ...data, messages }
-        setData(newData)
+        console.info('sendMessage: ', response.data.message.body)
+        appendMessage(response.data.message)
       })
       .catch(error => {
         console.error('sendMessage error: ', error.response.message)
