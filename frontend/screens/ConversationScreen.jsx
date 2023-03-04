@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Button,
@@ -19,23 +19,31 @@ export default function ConversationScreen({ route, navigation }) {
   const [isLoading, setIsLoading] = useState(false)
   const [body, setBody] = useState('test M phone')
   const echo = useContext(EchoContext)
+  const [message, setMessage] = useState(null)
+  const flatlistRef = useRef()
 
   useEffect(() => {
     getConversation()
-
     echo
       .private(`conversations.${route.params.uuid}`)
       .listen('Conversation\\MessageAdded', event => {
-        console.info('listen channel: ', event.message.body)
-        // appendMessage(event.message)
+        // console.info('listen event: ', event.message.body)
+        setMessage(event.message)
       })
-    console.log(`websocket connected | private channel: conversations.${route.params.uuid}`)
+    // console.log(`websocket connected: ${echo.socketId()} | conversations.${route.params.uuid}`)
 
     return () => {
       echo.leave(`conversations.${route.params.uuid}`)
-      console.log(`websocket disconnected | private channel: conversations.${route.params.uuid}`)
+      // console.log(`websocket disconnected`)
     }
   }, [])
+
+  useEffect(() => {
+    if (message) {
+      appendMessage(message)
+    }
+    setMessage(null)
+  }, [message])
 
   function getConversation() {
     setIsLoading(true)
@@ -68,8 +76,8 @@ export default function ConversationScreen({ route, navigation }) {
         body,
       })
       .then(response => {
-        console.info('sendMessage: ', response.data.message.body)
-        appendMessage(response.data.message)
+        // console.info('sendMessage: ', response.data.message.body)
+        setMessage(response.data.message)
       })
       .catch(error => {
         console.error('sendMessage error: ', error.response.message)
@@ -98,10 +106,12 @@ export default function ConversationScreen({ route, navigation }) {
         <ActivityIndicator />
       ) : (
         <FlatList
+          ref={flatlistRef}
           style={{ backgroundColor: '#fff' }}
           data={data.messages}
           renderItem={renderMessage}
           keyExtractor={item => item.id}
+          onContentSizeChange={() => flatlistRef.current.scrollToEnd()}
         />
       )}
 
