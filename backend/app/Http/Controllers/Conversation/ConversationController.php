@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Conversation;
 
+use App\Events\Conversation\ConversationCreated;
 use App\Events\Conversation\MessageAdded;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
@@ -88,6 +89,8 @@ class ConversationController extends Controller
         ]);
 
         $conversation->users()->sync(collect($request->users)->merge([auth()->user()])->pluck('id')->unique());
+
+        broadcast(new ConversationCreated($conversation, $request))->toOthers();
 
         return response()->json($conversation, 200);
     }

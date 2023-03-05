@@ -18,17 +18,29 @@ export default function HomeScreen({ navigation }) {
   const { user, logout } = useContext(AuthContext)
   const [data, setData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [conversation, setConversation] = useState(null)
 
   const echo = useContext(EchoContext)
 
   useEffect(() => {
     getConversations()
 
-    // laravel echo test http://10.168.2.4/public/broadcast
-    // echo.channel('things').listen('NewThingAvailable', event => {
-    //   console.info('event', event)
-    // })
+    echo.private(`users.${user.id}`).listen('Conversation\\ConversationCreated', event => {
+      console.info('listen event: ', event.conversation)
+      setConversation(event.conversation)
+    })
+
+    return () => {
+      echo.leave(`users.${user.id}`)
+    }
   }, [])
+
+  useEffect(() => {
+    if (conversation) {
+      appendConversation(conversation)
+    }
+    setConversation(null)
+  }, [conversation])
 
   function getConversations() {
     setIsLoading(true)
@@ -43,6 +55,11 @@ export default function HomeScreen({ navigation }) {
         console.error('Conversations error: ', error.response)
       })
       .finally(() => setIsLoading(false))
+  }
+
+  function appendConversation(conversation) {
+    const newData = [...data, conversation]
+    setData(newData)
   }
 
   function gotoConversation(uuid) {
@@ -61,11 +78,13 @@ export default function HomeScreen({ navigation }) {
       <Text>{item.uuid}</Text>
       {item.users.map(conversationUser => (
         <View key={conversationUser.id}>
+          {user.id === conversationUser.id && !conversationUser.pivot.read_at && (
+            <Text style={{ color: '#0055b3' }}>●</Text>
+          )}
           {user.id === conversationUser.id ? <Text>Ja</Text> : <Text>{conversationUser.name}</Text>}
         </View>
       ))}
       <View>
-        {!item.pivot.read_at && <Text>●</Text>}
         <Text>last message: {item.lastMessage.body}</Text>
       </View>
     </TouchableOpacity>
@@ -76,7 +95,13 @@ export default function HomeScreen({ navigation }) {
       {isLoading ? (
         <ActivityIndicator />
       ) : (
-        <FlatList data={data} renderItem={renderConversation} keyExtractor={item => item.id} />
+        <FlatList
+          data={data}
+          renderItem={renderConversation}
+          keyExtractor={item => item.id}
+          refreshing={false}
+          onRefresh={() => getConversations()}
+        />
       )}
       <TouchableOpacity style={styles.floatingButton} onPress={() => gotoNewConversation()}>
         <AntDesign name='plus' size={24} color='#fff' />
