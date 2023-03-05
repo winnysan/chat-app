@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Search\UserSearchController;
 use App\Http\Controllers\Conversation\ConversationController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -58,3 +59,5 @@ Route::post('/conversations/{conversation:uuid}/message', [ConversationControlle
 Route::get('/test', function () {
     return '.../api/test';
 });
+
+Route::get('/search/users', UserSearchController::class);
