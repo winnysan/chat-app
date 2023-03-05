@@ -7,6 +7,7 @@ import { useContext, useEffect, useState } from 'react'
 import HomeScreen from './screens/HomeScreen'
 import LoginScreen from './screens/LoginScreen'
 import ConversationScreen from './screens/ConversationScreen'
+import NewConversationScreen from './screens/NewConversationScreen'
 
 const Stack = createNativeStackNavigator()
 
@@ -44,6 +45,7 @@ export default function App() {
           <Stack.Navigator>
             <Stack.Screen name='Home' component={HomeScreen} />
             <Stack.Screen name='Conversation' component={ConversationScreen} />
+            <Stack.Screen name='NewConversation' component={NewConversationScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       ) : (

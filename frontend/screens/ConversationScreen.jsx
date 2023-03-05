@@ -8,19 +8,20 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  SafeAreaView,
 } from 'react-native'
 import { AuthContext } from '../context/AuthProvider'
 import { EchoContext } from '../context/EchoProvider'
 import axiosConfig from '../helpers/axiosConfig'
 
 export default function ConversationScreen({ route, navigation }) {
+  const flatlistRef = useRef()
+  const echo = useContext(EchoContext)
   const { user } = useContext(AuthContext)
   const [data, setData] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [body, setBody] = useState('test M phone')
-  const echo = useContext(EchoContext)
   const [message, setMessage] = useState(null)
-  const flatlistRef = useRef()
 
   useEffect(() => {
     getConversation()
@@ -100,14 +101,14 @@ export default function ConversationScreen({ route, navigation }) {
   )
 
   return (
-    <View style={{ flex: 1 }}>
-      <Text>conversation: {route.params.uuid}</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Text style={{ alignSelf: 'center' }}>{route.params.uuid}</Text>
       {isLoading ? (
         <ActivityIndicator />
       ) : (
         <FlatList
           ref={flatlistRef}
-          style={{ backgroundColor: '#fff' }}
+          style={{ backgroundColor: '#fff', margin: 10 }}
           data={data.messages}
           renderItem={renderMessage}
           keyExtractor={item => item.id}
@@ -132,7 +133,7 @@ export default function ConversationScreen({ route, navigation }) {
       </View>
 
       <Button title='Go back' onPress={() => navigation.goBack()} />
-    </View>
+    </SafeAreaView>
   )
 }
 
