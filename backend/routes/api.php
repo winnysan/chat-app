@@ -1,12 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Search\UserSearchController;
 use App\Http\Controllers\Conversation\ConversationController;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\ValidationException;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,43 +17,18 @@ use Illuminate\Validation\ValidationException;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'user']);
+
+Route::prefix('conversations')->group(function () {
+    Route::get('/', [ConversationController::class, 'index']);
+    Route::get('/{conversation:uuid}', [ConversationController::class, 'show']);
+    Route::post('/{conversation:uuid}/message', [ConversationController::class, 'store']);
+    Route::post('/create', [ConversationController::class, 'create']);
 });
 
-Route::post('/login', function (Request $request) {
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-        'device_name' => 'required',
-    ]);
-
-    $user = User::where('email', $request->email)->first();
-
-    if (!$user || !Hash::check($request->password, $user->password)) {
-        throw ValidationException::withMessages([
-            'email' => ['The provided credentials are incorrect.'],
-        ]);
-    }
-
-    $token = $user->createToken($request->device_name)->plainTextToken;
-
-    return response()->json([
-        'token' => $token,
-        'user' => $user->only('id', 'name', 'email')
-    ], 201);
-});
-
-Route::middleware('auth:sanctum')->post('/logout', function (Request $request) {
-    $request->user()->currentAccessToken()->delete();
-
-    return response()->json('Logged out', 200);
-});
-
-Route::get('/conversations', [ConversationController::class, 'index']);
-Route::get('/conversations/{conversation:uuid}', [ConversationController::class, 'show']);
-Route::post('/conversations/{conversation:uuid}/message', [ConversationController::class, 'store']);
-Route::post('/conversations/create', [ConversationController::class, 'create']);
+Route::get('/search/users', UserSearchController::class);
 
 Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
     return response()->json([
@@ -63,5 +36,3 @@ Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
         'query' => $request->query()
     ], 200);
 });
-
-Route::get('/search/users', UserSearchController::class);
