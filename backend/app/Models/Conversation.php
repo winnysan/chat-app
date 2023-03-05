@@ -9,13 +9,13 @@ class Conversation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['last_message_at'];
+    protected $fillable = ['last_message_at', 'uuid'];
 
     protected $dates = ['last_message_at'];
 
     public function users()
     {
-        return $this->belongsToMany(User::class)->withPivot('read_at');
+        return $this->belongsToMany(User::class)->withPivot('read_at')->withTimestamps();
     }
 
     public function others()

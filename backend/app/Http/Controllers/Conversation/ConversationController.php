@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ConversationController extends Controller
 {
@@ -68,5 +69,26 @@ class ConversationController extends Controller
         return response()->json([
             'message' => $message->load('user')
         ], 200);
+    }
+
+    public function create(Request $request)
+    {
+        $request->validate([
+            'users' => 'required',
+            'body' => 'required'
+        ]);
+
+        $conversation = Conversation::create([
+            'uuid' => Str::uuid(),
+        ]);
+
+        $conversation->messages()->create([
+            'user_id' => auth()->id(),
+            'body' => $request->body
+        ]);
+
+        $conversation->users()->sync(collect($request->users)->merge([auth()->user()])->pluck('id')->unique());
+
+        return response()->json($conversation, 200);
     }
 }

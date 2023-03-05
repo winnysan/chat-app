@@ -55,9 +55,13 @@ Route::middleware('auth:sanctum')->post('/logout', function (Request $request) {
 Route::get('/conversations', [ConversationController::class, 'index']);
 Route::get('/conversations/{conversation:uuid}', [ConversationController::class, 'show']);
 Route::post('/conversations/{conversation:uuid}/message', [ConversationController::class, 'store']);
+Route::post('/conversations/create', [ConversationController::class, 'create']);
 
-Route::get('/test', function () {
-    return '.../api/test';
+Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
+    return response()->json([
+        'request' => 'test',
+        'query' => $request->query()
+    ], 200);
 });
 
 Route::get('/search/users', UserSearchController::class);

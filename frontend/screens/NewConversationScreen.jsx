@@ -4,16 +4,14 @@ import { AuthContext } from '../context/AuthProvider'
 import axiosConfig from '../helpers/axiosConfig'
 import DelayInput from 'react-native-debounce-input'
 
-export default function NewConversationScreen() {
+export default function NewConversationScreen({ navigation }) {
   const { user } = useContext(AuthContext)
   const [suggestions, setSuggestions] = useState([])
   const [body, setBody] = useState('body text...')
-  const [users, setUsers] = useState([])
-
-  //   removePeople(e) {
-  //     let filteredArray = this.state.people.filter(item => item !== e.target.value)
-  //     this.setState({people: filteredArray});
-  // }
+  const [users, setUsers] = useState([
+    { id: 1, name: 'Marek' },
+    { id: 3, name: 'Stano' },
+  ])
 
   function searchUser(event) {
     if (!event) {
@@ -36,10 +34,31 @@ export default function NewConversationScreen() {
   function addUser(userId) {
     if (users.some(user => user.id === userId)) return
     setUsers([...users, suggestions.filter(suggestion => suggestion.id === userId)[0]])
+    setSuggestions([])
   }
 
   function removeUser(userId) {
     setUsers(users.filter(user => user.id !== userId))
+  }
+
+  function gotoConversation(uuid) {
+    navigation.navigate('Conversation', { uuid })
+  }
+
+  function handleSubmit() {
+    axiosConfig.defaults.headers.common['Authorization'] = `Bearer ${user.token}`
+    axiosConfig
+      .post('/conversations/create', {
+        users,
+        body,
+      })
+      .then(response => {
+        // console.log('handleSubmit: ', response.data)
+        gotoConversation(response.data.uuid)
+      })
+      .catch(error => {
+        console.error('handleSubmit error: ', error)
+      })
   }
 
   return (
@@ -83,7 +102,7 @@ export default function NewConversationScreen() {
         />
         <TouchableOpacity
           style={{ backgroundColor: '#0055b3', padding: 5 }}
-          onPress={() => console.log('body: ', body)}
+          onPress={() => handleSubmit()}
         >
           <Text style={{ color: '#fff' }}>Send</Text>
         </TouchableOpacity>
