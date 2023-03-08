@@ -32,6 +32,7 @@ export default function ConversationScreen({ route, navigation }) {
       .listen('Conversation\\MessageAdded', event => {
         // console.info('listen event: ', event.message.body)
         setMessage(event.message)
+        setAsRead()
       })
     // console.log(`websocket connected: ${echo.socketId()} | conversations.${route.params.uuid}`)
 
@@ -69,6 +70,18 @@ export default function ConversationScreen({ route, navigation }) {
     const messages = [...data.messages, message]
     const newData = { ...data, messages }
     setData(newData)
+  }
+
+  function setAsRead() {
+    axiosConfig.defaults.headers.common['Authorization'] = `Bearer ${user.token}`
+    axiosConfig
+      .patch(`/conversations/${route.params.uuid}`)
+      .then(response => {
+        // console.info('setMessageAsRead: ', response.data)
+      })
+      .catch(error => {
+        console.error('setMessageAsRead error: ', error.response)
+      })
   }
 
   function sendMessage() {

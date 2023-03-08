@@ -94,4 +94,15 @@ class ConversationController extends Controller
 
         return response()->json($conversation, 200);
     }
+
+    public function read(Conversation $conversation, Request $request)
+    {
+        $request->user()->conversations()->updateExistingPivot($conversation, [
+            'read_at' => now()
+        ]);
+
+        return response()->json([
+            'message' => 'The message is read'
+        ], 200);
+    }
 }
