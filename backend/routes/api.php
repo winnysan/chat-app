@@ -2,8 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Search\UserSearchController;
-use App\Http\Controllers\Conversation\ConversationController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\Conversation\ConversationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,10 +28,3 @@ Route::prefix('conversations')->group(function () {
 });
 
 Route::get('/search/users', UserSearchController::class);
-
-Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
-    return response()->json([
-        'request' => 'test',
-        'query' => $request->query()
-    ], 200);
-});

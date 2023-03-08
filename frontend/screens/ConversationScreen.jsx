@@ -9,6 +9,8 @@ import {
   TouchableOpacity,
   View,
   SafeAreaView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native'
 import { AuthContext } from '../context/AuthProvider'
 import { EchoContext } from '../context/EchoProvider'
@@ -101,39 +103,41 @@ export default function ConversationScreen({ route, navigation }) {
   )
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Text style={{ alignSelf: 'center' }}>{route.params.uuid}</Text>
-      {isLoading ? (
-        <ActivityIndicator />
-      ) : (
-        <FlatList
-          ref={flatlistRef}
-          style={{ backgroundColor: '#fff', margin: 10 }}
-          data={data.messages}
-          renderItem={renderMessage}
-          keyExtractor={item => item.id}
-          onContentSizeChange={() => flatlistRef.current.scrollToEnd()}
-        />
-      )}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <Text style={{ alignSelf: 'center' }}>{route.params.uuid}</Text>
+        {isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <FlatList
+            ref={flatlistRef}
+            style={{ backgroundColor: '#fff', margin: 10 }}
+            data={data.messages}
+            renderItem={renderMessage}
+            keyExtractor={item => item.id}
+            onContentSizeChange={() => flatlistRef.current.scrollToEnd()}
+          />
+        )}
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', margin: 10 }}>
-        <TextInput
-          onChangeText={setBody}
-          value={body}
-          placeholder='type...'
-          placeholderTextColor='gray'
-          style={{ flexGrow: 1, backgroundColor: '#fff' }}
-        />
-        <TouchableOpacity
-          style={{ backgroundColor: '#0055b3', padding: 5 }}
-          onPress={() => sendMessage()}
-        >
-          <Text style={{ color: '#fff' }}>Send</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', margin: 10 }}>
+          <TextInput
+            onChangeText={setBody}
+            value={body}
+            placeholder='type...'
+            placeholderTextColor='gray'
+            style={{ flexGrow: 1, backgroundColor: '#fff' }}
+          />
+          <TouchableOpacity
+            style={{ backgroundColor: '#0055b3', padding: 5 }}
+            onPress={() => sendMessage()}
+          >
+            <Text style={{ color: '#fff' }}>Send</Text>
+          </TouchableOpacity>
+        </View>
 
-      <Button title='Go back' onPress={() => navigation.goBack()} />
-    </SafeAreaView>
+        <Button title='Go back' onPress={() => navigation.goBack()} />
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   )
 }
 

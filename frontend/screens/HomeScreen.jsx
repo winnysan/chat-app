@@ -26,7 +26,7 @@ export default function HomeScreen({ navigation }) {
     getConversations()
 
     echo.private(`users.${user.id}`).listen('Conversation\\ConversationCreated', event => {
-      console.info('listen event: ', event.conversation)
+      // console.info('listen event: ', event.conversation)
       setConversation(event.conversation)
     })
 
