@@ -18,17 +18,24 @@ export default function HomeScreen({ navigation }) {
   const { user, logout } = useContext(AuthContext)
   const [data, setData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [conversation, setConversation] = useState(null)
+  const [createdConversation, setCreatedConversation] = useState(null)
+  const [updatedConversation, setUpdatedConversation] = useState(null)
 
   const echo = useContext(EchoContext)
 
   useEffect(() => {
     getConversations()
 
-    echo.private(`users.${user.id}`).listen('Conversation\\ConversationCreated', event => {
-      // console.info('listen event: ', event.conversation)
-      setConversation(event.conversation)
-    })
+    echo
+      .private(`users.${user.id}`)
+      .listen('Conversation\\ConversationCreated', event => {
+        // console.info('listenConversationCreated: ', event.conversation)
+        setCreatedConversation(event.conversation)
+      })
+      .listen('Conversation\\ConversationUpdated', event => {
+        // console.info('listenConversationUpdated: ', event.conversation.lastMessage.body)
+        setUpdatedConversation(event.conversation)
+      })
 
     return () => {
       echo.leave(`users.${user.id}`)
@@ -36,11 +43,18 @@ export default function HomeScreen({ navigation }) {
   }, [])
 
   useEffect(() => {
-    if (conversation) {
-      appendConversation(conversation)
+    if (createdConversation) {
+      appendConversation(createdConversation)
     }
-    setConversation(null)
-  }, [conversation])
+    setCreatedConversation(null)
+  }, [createdConversation])
+
+  useEffect(() => {
+    if (updatedConversation) {
+      updateConversation(updatedConversation)
+    }
+    setUpdatedConversation(null)
+  }, [updatedConversation])
 
   function getConversations() {
     setIsLoading(true)
@@ -62,12 +76,24 @@ export default function HomeScreen({ navigation }) {
     setData(newData)
   }
 
+  function updateConversation(event) {
+    // console.info('updateConversation: ', event.lastMessage.body)
+    const newData = data.map(conversation => {
+      if (conversation.id === event.id) {
+        conversation = event
+      }
+
+      return conversation
+    })
+    setData(newData)
+  }
+
   function gotoConversation(uuid) {
     navigation.navigate('Conversation', { uuid })
   }
 
-  function gotoNewConversation() {
-    navigation.navigate('NewConversation')
+  function gotocreatedConversation() {
+    navigation.navigate('createdConversation')
   }
 
   const renderConversation = ({ item }) => (
@@ -103,7 +129,7 @@ export default function HomeScreen({ navigation }) {
           onRefresh={() => getConversations()}
         />
       )}
-      <TouchableOpacity style={styles.floatingButton} onPress={() => gotoNewConversation()}>
+      <TouchableOpacity style={styles.floatingButton} onPress={() => gotocreatedConversation()}>
         <AntDesign name='plus' size={24} color='#fff' />
       </TouchableOpacity>
       <Button onPress={() => logout()} title='Logout' />

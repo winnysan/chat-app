@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Conversation;
 
 use App\Events\Conversation\ConversationCreated;
+use App\Events\Conversation\ConversationUpdated;
 use App\Events\Conversation\MessageAdded;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
@@ -66,6 +67,7 @@ class ConversationController extends Controller
         }
 
         broadcast(new MessageAdded($message))->toOthers();
+        broadcast(new ConversationUpdated($conversation));
 
         return response()->json([
             'message' => $message->load('user')
