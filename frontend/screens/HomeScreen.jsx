@@ -36,11 +36,11 @@ export default function HomeScreen({ navigation }) {
         // console.info('listenConversationUpdated: ', event.conversation.lastMessage.body)
         setUpdatedConversation(event.conversation)
       })
-    console.log(`echo.private: users.${user.id}`)
+    // console.log(`echo.private: users.${user.id}`)
 
     return () => {
       echo.leave(`users.${user.id}`)
-      console.log(`echo.leave: users.${user.id}`)
+      // console.log(`echo.leave: users.${user.id}`)
     }
   }, [])
 
