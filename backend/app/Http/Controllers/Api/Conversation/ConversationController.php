@@ -40,6 +40,8 @@ class ConversationController extends Controller
 
         $conversation->load('users', 'messages.user');
 
+        broadcast(new ConversationUpdated($conversation));
+
         return response()->json([
             'conversation' => $conversation
         ], 200);
@@ -92,7 +94,12 @@ class ConversationController extends Controller
 
         $conversation->users()->sync(collect($request->users)->merge([auth()->user()])->pluck('id')->unique());
 
-        broadcast(new ConversationCreated($conversation, $request))->toOthers();
+        $request->user()->conversations()->updateExistingPivot($conversation, [
+            'read_at' => now()
+        ]);
+
+        // broadcast(new ConversationCreated($conversation, $request))->toOthers();
+        broadcast(new ConversationCreated($conversation, $request));
 
         return response()->json($conversation, 200);
     }

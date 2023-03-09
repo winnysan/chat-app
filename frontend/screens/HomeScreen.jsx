@@ -29,16 +29,18 @@ export default function HomeScreen({ navigation }) {
     echo
       .private(`users.${user.id}`)
       .listen('Conversation\\ConversationCreated', event => {
-        // console.info('listenConversationCreated: ', event.conversation)
+        // console.info('listenConversationCreated: ', event.conversation.lastMessage.body)
         setCreatedConversation(event.conversation)
       })
       .listen('Conversation\\ConversationUpdated', event => {
         // console.info('listenConversationUpdated: ', event.conversation.lastMessage.body)
         setUpdatedConversation(event.conversation)
       })
+    console.log(`echo.private: users.${user.id}`)
 
     return () => {
       echo.leave(`users.${user.id}`)
+      console.log(`echo.leave: users.${user.id}`)
     }
   }, [])
 
@@ -92,8 +94,8 @@ export default function HomeScreen({ navigation }) {
     navigation.navigate('Conversation', { uuid })
   }
 
-  function gotocreatedConversation() {
-    navigation.navigate('createdConversation')
+  function gotoNewConversation() {
+    navigation.navigate('NewConversation')
   }
 
   const renderConversation = ({ item }) => (
@@ -129,7 +131,7 @@ export default function HomeScreen({ navigation }) {
           onRefresh={() => getConversations()}
         />
       )}
-      <TouchableOpacity style={styles.floatingButton} onPress={() => gotocreatedConversation()}>
+      <TouchableOpacity style={styles.floatingButton} onPress={() => gotoNewConversation()}>
         <AntDesign name='plus' size={24} color='#fff' />
       </TouchableOpacity>
       <Button onPress={() => logout()} title='Logout' />

@@ -42,7 +42,11 @@ class ConversationCreated implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        return $this->conversation->others->map(function ($user) {
+        // return $this->conversation->others->map(function ($user) {
+        //     return new PrivateChannel('users.' . $user->id);
+        // })->toArray();
+
+        return $this->conversation->users->map(function ($user) {
             return new PrivateChannel('users.' . $user->id);
         })->toArray();
     }
