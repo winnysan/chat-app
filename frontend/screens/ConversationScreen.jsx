@@ -12,6 +12,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native'
+import DelayInput from 'react-native-debounce-input'
 import { AuthContext } from '../context/AuthProvider'
 import { EchoContext } from '../context/EchoProvider'
 import axiosConfig from '../helpers/axiosConfig'
@@ -24,6 +25,11 @@ export default function ConversationScreen({ route, navigation }) {
   const [isLoading, setIsLoading] = useState(false)
   const [body, setBody] = useState('test M phone')
   const [message, setMessage] = useState(null)
+
+  // search user start
+  const [suggestions, setSuggestions] = useState([])
+  const [users, setUsers] = useState([])
+  // search user end
 
   useEffect(() => {
     getConversation()
@@ -100,6 +106,52 @@ export default function ConversationScreen({ route, navigation }) {
       })
   }
 
+  // search user start
+  function searchUser(event) {
+    if (!event) {
+      setSuggestions([])
+      return
+    }
+
+    axiosConfig.defaults.headers.common['Authorization'] = `Bearer ${user.token}`
+    axiosConfig
+      .get(`/search/users?q=${event}`)
+      .then(response => {
+        // console.log('search users: ', response.data)
+        setSuggestions(response.data)
+      })
+      .catch(error => {
+        console.error('searchUser error: ', error)
+      })
+  }
+
+  function addUserToSuggestions(userId) {
+    if (users.some(user => user.id === userId)) return
+    setUsers([...users, suggestions.filter(suggestion => suggestion.id === userId)[0]])
+    setSuggestions([])
+  }
+
+  function removeUserFromSuggestions(userId) {
+    setUsers(users.filter(user => user.id !== userId))
+  }
+  // search user end
+
+  function addUserToConversation() {
+    axiosConfig.defaults.headers.common['Authorization'] = `Bearer ${user.token}`
+    axiosConfig.defaults.headers.common['X-Socket-ID'] = echo.socketId() ? echo.socketId() : null
+    axiosConfig
+      .post(`/conversations/${route.params.uuid}/adduser`, {
+        users,
+      })
+      .then(response => {
+        // console.log('addUserToConversation: ', response.data)
+        setUsers([])
+      })
+      .catch(error => {
+        console.error('addUserToConversation error: ', error.response)
+      })
+  }
+
   const renderMessage = ({ item }) => (
     <View style={user.id === item.user_id ? [styles.message, styles.ownMessage] : styles.message}>
       <Text
@@ -119,6 +171,44 @@ export default function ConversationScreen({ route, navigation }) {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={{ flex: 1 }}>
         <Text style={{ alignSelf: 'center' }}>{route.params.uuid}</Text>
+        {/* search user start */}
+        <View style={{ margin: 10 }}>
+          <Text>
+            logged user: {user.id} - {user.name}
+          </Text>
+          <View style={{ flexDirection: 'row' }}>
+            {users &&
+              users.map(user => (
+                <Button
+                  key={user.id}
+                  title={user.name}
+                  onPress={() => removeUserFromSuggestions(user.id)}
+                />
+              ))}
+            {users.length > 0 && (
+              <Button title={'Add user'} onPress={() => addUserToConversation()} />
+            )}
+          </View>
+          <DelayInput
+            delayTimeout={500}
+            minLength={1}
+            onChangeText={event => searchUser(event)}
+            placeholder='find user...'
+            placeholderTextColor='gray'
+            style={{ flexGrow: 1, backgroundColor: '#fff' }}
+          />
+          <View style={{ flexDirection: 'row' }}>
+            {suggestions &&
+              suggestions.map(suggestion => (
+                <Button
+                  key={suggestion.id}
+                  title={suggestion.name}
+                  onPress={() => addUserToSuggestions(suggestion.id)}
+                />
+              ))}
+          </View>
+        </View>
+        {/* search user end */}
         {isLoading ? (
           <ActivityIndicator />
         ) : (

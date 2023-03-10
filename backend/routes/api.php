@@ -25,6 +25,7 @@ Route::prefix('conversations')->group(function () {
     Route::get('/{conversation:uuid}', [ConversationController::class, 'show']);
     Route::patch('/{conversation:uuid}', [ConversationController::class, 'read']);
     Route::post('/{conversation:uuid}/message', [ConversationController::class, 'store']);
+    Route::post('/{conversation:uuid}/adduser', [ConversationController::class, 'adduser']);
     Route::post('/create', [ConversationController::class, 'create']);
 });
 

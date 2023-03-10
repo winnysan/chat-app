@@ -17,11 +17,9 @@ export default function NewConversationScreen({ navigation }) {
   const { user } = useContext(AuthContext)
   const [suggestions, setSuggestions] = useState([])
   const [body, setBody] = useState('body text...')
-  const [users, setUsers] = useState([
-    { id: 1, name: 'Marek' },
-    { id: 3, name: 'Stano' },
-  ])
+  const [users, setUsers] = useState([])
 
+  // search user start
   function searchUser(event) {
     if (!event) {
       setSuggestions([])
@@ -49,6 +47,7 @@ export default function NewConversationScreen({ navigation }) {
   function removeUser(userId) {
     setUsers(users.filter(user => user.id !== userId))
   }
+  // search user end
 
   function gotoConversation(uuid) {
     navigation.navigate('Conversation', { uuid })
@@ -73,6 +72,7 @@ export default function NewConversationScreen({ navigation }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={{ flex: 1 }}>
+        {/* search user start */}
         <View style={{ margin: 10 }}>
           <Text>
             logged user: {user.id} - {user.name}
@@ -102,6 +102,7 @@ export default function NewConversationScreen({ navigation }) {
               ))}
           </View>
         </View>
+        {/* search user end */}
         <View
           style={{
             flexDirection: 'row',

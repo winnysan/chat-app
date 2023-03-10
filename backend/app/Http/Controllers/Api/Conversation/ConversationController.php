@@ -51,6 +51,8 @@ class ConversationController extends Controller
 
     public function store(Conversation $conversation, Message $message, Request $request)
     {
+        $this->authorize('show', $conversation);
+
         $request->validate([
             'body' => 'required'
         ]);
@@ -112,8 +114,23 @@ class ConversationController extends Controller
             'read_at' => now()
         ]);
 
+        broadcast(new ConversationUpdated($conversation));
+
         return response()->json([
             'message' => 'The message is read'
+        ], 200);
+    }
+
+    public function adduser(Conversation $conversation, Request $request)
+    {
+        foreach ($request->users as $user) {
+            $conversation->users()->syncWithoutDetaching($user['id']);
+        }
+
+        broadcast(new ConversationUpdated($conversation));
+
+        return response()->json([
+            'message' => 'The user is added'
         ], 200);
     }
 }
