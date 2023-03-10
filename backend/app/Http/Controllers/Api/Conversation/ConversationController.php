@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Conversation;
 use App\Events\Conversation\ConversationCreated;
 use App\Events\Conversation\ConversationUpdated;
 use App\Events\Conversation\MessageAdded;
+use App\Events\Conversation\UsersAdded;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
@@ -117,7 +118,7 @@ class ConversationController extends Controller
         broadcast(new ConversationUpdated($conversation));
 
         return response()->json([
-            'message' => 'The message is read'
+            'message' => 'The message is read.'
         ], 200);
     }
 
@@ -127,10 +128,12 @@ class ConversationController extends Controller
             $conversation->users()->syncWithoutDetaching($user['id']);
         }
 
+        // broadcast(new UsersAdded($conversation))->toOthers();
+        broadcast(new UsersAdded($conversation));
         broadcast(new ConversationUpdated($conversation));
 
         return response()->json([
-            'message' => 'The user is added'
+            'message' => 'The users are added.'
         ], 200);
     }
 }

@@ -25,6 +25,7 @@ export default function ConversationScreen({ route, navigation }) {
   const [isLoading, setIsLoading] = useState(false)
   const [body, setBody] = useState('test M phone')
   const [message, setMessage] = useState(null)
+  const [newUsers, setNewUsers] = useState(null)
 
   // search user start
   const [suggestions, setSuggestions] = useState([])
@@ -36,9 +37,13 @@ export default function ConversationScreen({ route, navigation }) {
     echo
       .private(`conversations.${route.params.uuid}`)
       .listen('Conversation\\MessageAdded', event => {
-        // console.info('listen event: ', event.message.body)
+        // console.info('Conversation\\MessageAdded: ', event.message.body)
         setMessage(event.message)
         setAsRead()
+      })
+      .listen('Conversation\\UsersAdded', event => {
+        // console.info('Conversation\\UsersAdded: ', event)
+        setNewUsers(event.users)
       })
     // console.log(`websocket connected: ${echo.socketId()} | conversations.${route.params.uuid}`)
 
@@ -54,6 +59,13 @@ export default function ConversationScreen({ route, navigation }) {
     }
     setMessage(null)
   }, [message])
+
+  useEffect(() => {
+    if (newUsers) {
+      setNewUsersToConversation(newUsers)
+    }
+    setNewUsers(null)
+  }, [newUsers])
 
   function getConversation() {
     setIsLoading(true)
@@ -152,6 +164,12 @@ export default function ConversationScreen({ route, navigation }) {
       })
   }
 
+  function setNewUsersToConversation(newUsers) {
+    const users = newUsers
+    const newData = { ...data, users }
+    setData(newData)
+  }
+
   const renderMessage = ({ item }) => (
     <View style={user.id === item.user_id ? [styles.message, styles.ownMessage] : styles.message}>
       <Text
@@ -171,6 +189,13 @@ export default function ConversationScreen({ route, navigation }) {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={{ flex: 1 }}>
         <Text style={{ alignSelf: 'center' }}>{route.params.uuid}</Text>
+        {data.users && (
+          <View>
+            {data.users.map(item => (
+              <Text key={item.id}>{user.id === item.id ? 'Ja' : item.name}</Text>
+            ))}
+          </View>
+        )}
         {/* search user start */}
         <View style={{ margin: 10 }}>
           <Text>
