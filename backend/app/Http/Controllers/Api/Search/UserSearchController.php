@@ -21,6 +21,8 @@ class UserSearchController extends Controller
             return response()->json([], 200);
         }
 
-        return User::where(DB::raw('LOWER(name)'), 'LIKE', '%' . Str::lower($q) . '%')->get(['id', 'name']);
+        $user = User::where(DB::raw('LOWER(name)'), 'LIKE', '%' . Str::lower($q) . '%')->get(['id', 'name']);
+
+        return $user->except(auth()->id());
     }
 }
