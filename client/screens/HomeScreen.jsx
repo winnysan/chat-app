@@ -1,18 +1,18 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
-  Button,
   FlatList,
   SafeAreaView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
-import { AntDesign } from '@expo/vector-icons'
+import { Ionicons, Entypo } from '@expo/vector-icons'
 import { AuthContext } from '../context/AuthProvider'
 import { EchoContext } from '../context/EchoProvider'
 import axiosConfig from '../helpers/axiosConfig'
+import { Modalize } from 'react-native-modalize'
+import NewChat from '../components/NewChat'
 
 export default function HomeScreen({ navigation }) {
   const { user, logout } = useContext(AuthContext)
@@ -20,8 +20,32 @@ export default function HomeScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(false)
   const [createdConversation, setCreatedConversation] = useState(null)
   const [updatedConversation, setUpdatedConversation] = useState(null)
+  const modalizeRef = useRef(null)
 
   const echo = useContext(EchoContext)
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: null,
+      headerHideShadow: true,
+      headerRight: ({ color }) => (
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: 64,
+          }}
+        >
+          <TouchableOpacity onPress={() => onOpen()}>
+            <Ionicons name='create-outline' size={24} color={color} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => logout()}>
+            <Entypo name='dots-three-vertical' size={24} color='black' />
+          </TouchableOpacity>
+        </View>
+      ),
+    })
+  })
 
   useEffect(() => {
     getConversations()
@@ -98,57 +122,75 @@ export default function HomeScreen({ navigation }) {
     navigation.navigate('NewConversation')
   }
 
+  function onOpen() {
+    modalizeRef.current?.open()
+  }
+
   const renderConversation = ({ item }) => (
     <TouchableOpacity
-      style={{ backgroundColor: '#fff', margin: 10 }}
+      style={{
+        flexDirection: 'row',
+        paddingHorizontal: 10,
+        paddingVertical: 16,
+        borderColor: '#000',
+        borderWidth: 1,
+        borderRadius: 20,
+        marginVertical: 5,
+      }}
       onPress={() => gotoConversation(item.uuid)}
     >
-      <Text>{item.uuid}</Text>
-      {item.users.map(conversationUser => (
-        <View key={conversationUser.id}>
-          {user.id === conversationUser.id && !conversationUser.pivot.read_at && (
-            <Text style={{ color: '#0055b3' }}>●</Text>
+      <View style={{ alignItems: 'flex-start' }}>
+        <Ionicons name='person-circle-outline' size={48} color='black' />
+      </View>
+      <View style={{ flexGrow: 1, justifyContent: 'space-around', marginLeft: 10 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+          {item.users.map(
+            u =>
+              user.id === u.id &&
+              !u.pivot.read_at && (
+                <Text key={u.id} style={{ marginRight: 8, fontSize: 20 }}>
+                  ●
+                </Text>
+              )
           )}
-          {user.id === conversationUser.id ? <Text>Ja</Text> : <Text>{conversationUser.name}</Text>}
+          {item.users.map(u => (
+            <Text key={u.id} style={{ marginRight: 2, fontSize: 20, fontWeight: 'bold' }}>
+              {user.id === u.id ? 'Ja' : u.name},
+            </Text>
+          ))}
         </View>
-      ))}
-      <View>
-        <Text>last message: {item.lastMessage.body}</Text>
+        <Text>
+          {item.lastMessage.body} ({item.lastMessage.created_at.slice(0, 10)})
+        </Text>
+        <Text>{item.uuid}</Text>
       </View>
     </TouchableOpacity>
   )
 
   return (
-    <SafeAreaView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      {isLoading ? (
-        <ActivityIndicator />
-      ) : (
-        <FlatList
-          data={data}
-          renderItem={renderConversation}
-          keyExtractor={item => item.id}
-          refreshing={false}
-          onRefresh={() => getConversations()}
-        />
-      )}
-      <TouchableOpacity style={styles.floatingButton} onPress={() => gotoNewConversation()}>
-        <AntDesign name='plus' size={24} color='#fff' />
-      </TouchableOpacity>
-      <Button onPress={() => logout()} title='Logout' />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <>
+        {isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <FlatList
+            data={data}
+            style={{ padding: 10 }}
+            renderItem={renderConversation}
+            keyExtractor={item => item.id}
+            refreshing={false}
+            onRefresh={() => getConversations()}
+          />
+        )}
+        <Modalize
+          ref={modalizeRef}
+          disableScrollIfPossible
+          adjustToContentHeight
+          keyboardAvoidingOffset={60}
+        >
+          <NewChat />
+        </Modalize>
+      </>
     </SafeAreaView>
   )
 }
-
-const styles = StyleSheet.create({
-  floatingButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0055b3',
-    position: 'absolute',
-    bottom: 80,
-    right: 20,
-  },
-})

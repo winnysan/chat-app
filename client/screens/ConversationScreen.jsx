@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Button,
@@ -11,11 +11,14 @@ import {
   SafeAreaView,
   TouchableWithoutFeedback,
   Keyboard,
+  KeyboardAvoidingView,
 } from 'react-native'
 import DelayInput from 'react-native-debounce-input'
 import { AuthContext } from '../context/AuthProvider'
 import { EchoContext } from '../context/EchoProvider'
 import axiosConfig from '../helpers/axiosConfig'
+import { Ionicons } from '@expo/vector-icons'
+import { Entypo } from '@expo/vector-icons'
 
 export default function ConversationScreen({ route, navigation }) {
   const flatlistRef = useRef()
@@ -23,7 +26,7 @@ export default function ConversationScreen({ route, navigation }) {
   const { user } = useContext(AuthContext)
   const [data, setData] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-  const [body, setBody] = useState('test M phone')
+  const [body, setBody] = useState('test body M phone')
   const [message, setMessage] = useState(null)
   const [newUsers, setNewUsers] = useState(null)
 
@@ -31,6 +34,29 @@ export default function ConversationScreen({ route, navigation }) {
   const [suggestions, setSuggestions] = useState([])
   const [users, setUsers] = useState([])
   // search user end
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: 'Chat title',
+      headerBackTitleVisible: false,
+      headerRight: ({ color }) => (
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: 64,
+          }}
+        >
+          <TouchableOpacity>
+            <Ionicons name='person-add-outline' size={24} color={color} />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Entypo name='dots-three-vertical' size={24} color={color} />
+          </TouchableOpacity>
+        </View>
+      ),
+    })
+  })
 
   useEffect(() => {
     getConversation()
@@ -103,6 +129,8 @@ export default function ConversationScreen({ route, navigation }) {
   }
 
   function sendMessage() {
+    Keyboard.dismiss()
+    setBody(null)
     axiosConfig.defaults.headers.common['Authorization'] = `Bearer ${user.token}`
     axiosConfig.defaults.headers.common['X-Socket-ID'] = echo.socketId() ? echo.socketId() : null
     axiosConfig
@@ -181,23 +209,28 @@ export default function ConversationScreen({ route, navigation }) {
       >
         {item.body}
       </Text>
-      {user.id === item.user_id ? <Text>Ja</Text> : <Text>{item.user.name}</Text>}
+      <Text style={styles.messageMeta}>{user.id === item.user_id ? 'Ja' : item.user.name}</Text>
     </View>
   )
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <Text style={{ alignSelf: 'center' }}>{route.params.uuid}</Text>
-        {data.users && (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={100}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          {/* <Text style={{ alignSelf: 'center' }}>{route.params.uuid}</Text> */}
+          {/* {data.users && (
           <View>
             {data.users.map(item => (
               <Text key={item.id}>{user.id === item.id ? 'Ja' : item.name}</Text>
             ))}
           </View>
-        )}
-        {/* search user start */}
-        <View style={{ margin: 10 }}>
+        )} */}
+          {/* search user start */}
+          {/* <View style={{ margin: 10 }}>
           <Text>
             logged user: {user.id} - {user.name}
           </Text>
@@ -232,53 +265,86 @@ export default function ConversationScreen({ route, navigation }) {
                 />
               ))}
           </View>
-        </View>
-        {/* search user end */}
-        {isLoading ? (
-          <ActivityIndicator />
-        ) : (
-          <FlatList
-            ref={flatlistRef}
-            style={{ backgroundColor: '#fff', margin: 10 }}
-            data={data.messages}
-            renderItem={renderMessage}
-            keyExtractor={item => item.id}
-            onContentSizeChange={() => flatlistRef.current.scrollToEnd()}
-          />
-        )}
+        </View> */}
+          {/* search user end */}
+          <>
+            {isLoading ? (
+              <ActivityIndicator />
+            ) : (
+              <FlatList
+                ref={flatlistRef}
+                style={{ margin: 10 }}
+                data={data.messages}
+                renderItem={renderMessage}
+                keyExtractor={item => item.id}
+                onContentSizeChange={() => flatlistRef.current.scrollToEnd()}
+              />
+            )}
 
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', margin: 10 }}>
-          <TextInput
-            onChangeText={setBody}
-            value={body}
-            placeholder='type...'
-            placeholderTextColor='gray'
-            style={{ flexGrow: 1, backgroundColor: '#fff' }}
-          />
-          <TouchableOpacity
-            style={{ backgroundColor: '#0055b3', padding: 5 }}
-            onPress={() => sendMessage()}
-          >
-            <Text style={{ color: '#fff' }}>Send</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Button title='Go back' onPress={() => navigation.goBack()} />
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                width: '100%',
+                padding: 15,
+              }}
+            >
+              <TextInput
+                onChangeText={text => setBody(text)}
+                onSubmitEditing={() => sendMessage()}
+                value={body}
+                placeholder='type...'
+                style={styles.inputText}
+              />
+              <TouchableOpacity onPress={() => sendMessage()}>
+                <Ionicons name='paper-plane-outline' size={24} color='#000' />
+              </TouchableOpacity>
+            </View>
+          </>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
   message: {
+    padding: 15,
+    backgroundColor: '#000',
     alignSelf: 'flex-start',
-    margin: 5,
+    borderRadius: 20,
+    marginRight: 15,
+    marginBottom: 20,
+    maxWidth: '80%',
+    position: 'relative',
+    borderWidth: 2,
+    borderColor: '#000',
   },
-  ownMessage: { alignSelf: 'flex-end', alignItems: 'flex-end' },
+  ownMessage: {
+    alignSelf: 'flex-end',
+    alignItems: 'flex-end',
+    backgroundColor: 'transparent',
+  },
   messageBody: {
-    backgroundColor: '#2f2f2f',
     color: '#fff',
-    padding: 10,
   },
-  ownMessageBody: { backgroundColor: '#0055b3' },
+  ownMessageBody: { color: '#000' },
+  messageMeta: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#000',
+    position: 'absolute',
+    paddingHorizontal: 10,
+    bottom: -10,
+  },
+  inputText: {
+    bottom: 0,
+    height: 40,
+    flexGrow: 1,
+    marginRight: 10,
+    borderColor: '#000',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 30,
+  },
 })
